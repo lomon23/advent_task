@@ -1,30 +1,54 @@
-function isSafeReport(report) {
-    const levels = report.split(' ').map(Number);
+const fs = require('fs');
 
-    let increasing = true;
-    let decreasing = true;
+// Функція для перевірки правильності рядка
+function isValidLine(numbers) {
+    let isIncreasing = true;
+    let isDecreasing = true;
 
-    for (let i = 1; i < levels.length; i++) {
-        const diff = levels[i] - levels[i - 1];
+    for (let i = 0; i < numbers.length - 1; i++) {
+        const diff = numbers[i + 1] - numbers[i];
 
-        if (diff < 1 || diff > 3) return false; // Умова на різницю
-        if (diff > 0) decreasing = false;
-        if (diff < 0) increasing = false;
+        // Перевірка, чи різниця між сусідніми числами в межах 1..3
+        if (Math.abs(diff) < 1 || Math.abs(diff) > 3) {
+            return false; // Якщо різниця поза допустимими межами, рядок неправильний
+        }
+
+        // Перевірка зростання і спадання
+        if (diff > 0) {
+            isDecreasing = false; // Якщо є зростання, рядок не спадає
+        } else if (diff < 0) {
+            isIncreasing = false; // Якщо є спадання, рядок не зростає
+        }
     }
 
-    return increasing || decreasing; // Має бути або зростаючим, або спадаючим
+    // Рядок правильний, якщо він або зростає, або спадає
+    return isIncreasing || isDecreasing;
 }
 
-// Аналізуємо всі рапорти
-const reports = [
-    "7 6 4 2 1",
-    "1 2 7 8 9",
-    "9 7 6 2 1",
-    "1 3 2 4 5",
-    "8 6 4 4 1",
-    "1 3 6 7 9"
-];
+// Читання файлу та обробка рядків
+fs.readFile('./task2/input2.txt', 'utf8', (err, data) => {
+    if (err) {
+        console.error("Помилка при читанні файлу:", err);
+        return;
+    }
 
-const safeReports = reports.filter(isSafeReport);
-console.log("Кількість безпечних рапортів:", safeReports.length);
+    // Поділ на рядки
+    const lines = data.trim().split('\n');
+    let correctCount = 0;
+    let incorrectCount = 0;
 
+    // Перевірка кожного рядка
+    lines.forEach(line => {
+        const numbers = line.trim().split(' ').map(Number);
+
+        if (isValidLine(numbers)) {
+            correctCount++;
+        } else {
+            incorrectCount++;
+        }
+    });
+
+    // Виведення результатів
+    console.log(`Кількість правильних рядків: ${correctCount}`);
+    console.log(`Кількість неправильних рядків: ${incorrectCount}`);
+});
